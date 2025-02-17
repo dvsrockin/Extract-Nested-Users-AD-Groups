@@ -80,14 +80,18 @@ If(!(Test-Path $Filepath)){
         }
     }
     while ($loop -gt 0)
-$listUsers = ($listUsers | Sort-Object -Unique)
-$GC = (Get-ADDomainController -Filter {IsGlobalCatalog -eq $true} | Select-Object -ExpandProperty hostname)[0] + ":3268"
-$Propertiesarray = $Properties.split(",")
-$listUsers |  ForEach-Object { 
-    Get-ADUser -Identity $_ -Properties $Propertiesarray -Server $GC  | Select-Object $Propertiesarray |
-            Export-Csv $filepath -Append -NoTypeInformation
-
-}
+    $listUsers = ($listUsers | Sort-Object -Unique)
+    If(($listUsers | Measure-object).count -gt "0"){
+        $GC = (Get-ADDomainController -Filter {IsGlobalCatalog -eq $true} | Select-Object -ExpandProperty hostname)[0] + ":3268"
+        $Propertiesarray = $Properties.split(",")
+        $listUsers |  ForEach-Object { 
+            Get-ADUser -Identity $_ -Properties $Propertiesarray -Server $GC  | Select-Object $Propertiesarray |
+                    Export-Csv $filepath -Append -NoTypeInformation
+        }
+    }
+    else{
+            Write-Host "the group has Zero Users" -ForegroundColor Yellow
+    }
 PAUSE
 
 

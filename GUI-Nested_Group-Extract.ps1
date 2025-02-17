@@ -114,16 +114,21 @@ $button.Add_Click({
     }
     while ($loop -gt 0)
 
-$listUsers = ($listUsers | Sort-Object -Unique)
-$GC = (Get-ADDomainController -Filter {IsGlobalCatalog -eq $true} | Select-Object -ExpandProperty hostname)[0] + ":3268"
-$Propertiesarray = $Properties.split(",")
+    $listUsers = ($listUsers | Sort-Object -Unique)
+    If(($listUsers | Measure-object).count -gt "0"){
 
-$listUsers |  ForEach-Object { 
-    Get-ADUser -Identity $_ -Properties $Propertiesarray -Server $GC  | Select-Object $Propertiesarray |
-            Export-Csv $filepath -Append -NoTypeInformation
+        $GC = (Get-ADDomainController -Filter {IsGlobalCatalog -eq $true} | Select-Object -ExpandProperty hostname)[0] + ":3268"
+        $Propertiesarray = $Properties.split(",")
 
-}
-    [System.Windows.Forms.MessageBox]::Show("Export completed successfully!", "Success", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        $listUsers |  ForEach-Object { 
+                            Get-ADUser -Identity $_ -Properties $Propertiesarray -Server $GC  | Select-Object $Propertiesarray |
+                                    Export-Csv $filepath -Append -NoTypeInformation
+                        [System.Windows.Forms.MessageBox]::Show("Export completed successfully!", "Success", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+                    }
+    }
+    Else{
+            [System.Windows.Forms.MessageBox]::Show("The AD group has zero users!", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Exclamation)
+    }
 })
 
 # Show the form
